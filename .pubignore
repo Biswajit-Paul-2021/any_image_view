@@ -1,0 +1,5 @@
+# Local planning/design artifacts (not user-facing docs)
+docs/
+
+# Local logs from development
+logs/
