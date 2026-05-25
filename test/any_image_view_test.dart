@@ -152,6 +152,38 @@ void main() {
       expect(find.byType(CachedNetworkImage), findsOneWidget);
     });
 
+    testWidgets('network AVIF URL builds CachedNetworkAvifImage', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: AnyImageView(
+              imagePath: 'https://example.com/photo.avif',
+              width: 100,
+              height: 100,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.byType(CachedNetworkAvifImage), findsOneWidget);
+    });
+
+    testWidgets('network AVIF URL with query string builds CachedNetworkAvifImage', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: AnyImageView(
+              imagePath: 'https://cdn.example.com/photo.avif?token=abc',
+              width: 100,
+              height: 100,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.byType(CachedNetworkAvifImage), findsOneWidget);
+    });
+
     testWidgets('null imagePath shows error fallback (broken image)', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
