@@ -34,6 +34,10 @@ AnyImageView(imagePath: 'https://example.com/icon.svg', height: 40, width: 40, s
 // Lottie
 AnyImageView(imagePath: 'assets/animation.json', height: 100, width: 100)
 
+// AVIF (asset, network, or file — animated AVIFs auto-play)
+AnyImageView(imagePath: 'assets/photo.avif', height: 200, width: 200)
+AnyImageView(imagePath: 'https://example.com/photo.avif', height: 200, width: 200)
+
 // XFile (Image Picker)
 AnyImageView(imagePath: xFile, height: 200, width: 200)
 
@@ -71,7 +75,7 @@ AnyImageView(
 
 ## Supported Formats
 
-PNG, JPG, WebP, GIF, SVG, Lottie (.json), TIFF, RAW, HEIC, BMP, ICO
+PNG, JPG, WebP, GIF, AVIF, SVG, Lottie (.json), TIFF, RAW, HEIC, BMP, ICO
 
 ## Platform Support
 
