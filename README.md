@@ -13,7 +13,7 @@
 
 ```yaml
 dependencies:
-  any_image_view: ^2.1.0
+  any_image_view: ^2.2.0
 ```
 
 ## Usage
