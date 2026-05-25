@@ -35,6 +35,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_avif/flutter_avif.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
@@ -190,6 +191,13 @@ class AnyImageView extends StatelessWidget {
         (lower.endsWith('.svg') || lower.contains('.svg?'));
   }
 
+  /// True if the path is a network URL pointing to an AVIF file.
+  static bool _isAvifUrl(String path) {
+    final lower = path.toLowerCase();
+    return (lower.startsWith('http://') || lower.startsWith('https://')) &&
+        (lower.endsWith('.avif') || lower.contains('.avif?'));
+  }
+
   /// Builds the image widget based on the provided `imagePath`.
   Widget _buildImage() {
     // Fallback widget displayed when an error occurs or the image path is invalid.
@@ -255,6 +263,16 @@ class AnyImageView extends StatelessWidget {
           return errorFallback();
         }
 
+        if (path.toLowerCase().endsWith('.avif')) {
+          return AvifImage.file(
+            file,
+            height: height,
+            width: width,
+            fit: fit ?? BoxFit.cover,
+            errorBuilder: (_, __, ___) => errorFallback(),
+          );
+        }
+
         // Displays the image with fade-in animation.
         return Image.file(
           file,
@@ -283,6 +301,15 @@ class AnyImageView extends StatelessWidget {
           loadingWidget: _buildLoadingWidget(),
           errorFallback: errorFallback,
         );
+      case ImageType.avif:
+        // Handles AVIF image loading (local assets).
+        return AvifImage.asset(
+          path,
+          height: height,
+          width: width,
+          fit: fit ?? BoxFit.cover,
+          errorBuilder: (_, __, ___) => errorFallback(),
+        );
       case ImageType.json:
       case ImageType.zip:
         // Handles Lottie animation loading (local assets only).
@@ -305,6 +332,17 @@ class AnyImageView extends StatelessWidget {
             colorFilter: _effectiveSvgColorFilter,
             loadingWidget: _buildLoadingWidget(),
             errorFallback: errorFallback,
+          );
+        }
+        // Handles network AVIF (URLs ending with .avif) via cached AVIF image.
+        if (_isAvifUrl(path)) {
+          return CachedNetworkAvifImage(
+            path,
+            height: height,
+            width: width,
+            fit: fit ?? BoxFit.cover,
+            headers: httpHeaders,
+            errorBuilder: (_, __, ___) => errorFallback(),
           );
         }
         // Handles network image loading without caching for best resolution.
@@ -484,6 +522,9 @@ enum ImageType {
   /// Bitmap image format.
   bmp,
 
+  /// AV1 Image File Format.
+  avif,
+
   /// Icon file format.
   ico,
 
@@ -520,6 +561,7 @@ extension ImageTypeExtension on String {
     if (startsWith('file://') || startsWith('/')) return ImageType.file;
     // Check for specific file extensions (for local assets)
     if (endsWith('.svg')) return ImageType.svg;
+    if (endsWith('.avif')) return ImageType.avif;
     if (endsWith('.json')) return ImageType.json;
     if (endsWith('.zip')) return ImageType.zip;
     if (endsWith('.webp')) return ImageType.webp;
