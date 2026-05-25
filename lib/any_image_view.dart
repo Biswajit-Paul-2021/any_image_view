@@ -484,6 +484,9 @@ enum ImageType {
   /// Bitmap image format.
   bmp,
 
+  /// AV1 Image File Format.
+  avif,
+
   /// Icon file format.
   ico,
 
@@ -520,6 +523,7 @@ extension ImageTypeExtension on String {
     if (startsWith('file://') || startsWith('/')) return ImageType.file;
     // Check for specific file extensions (for local assets)
     if (endsWith('.svg')) return ImageType.svg;
+    if (endsWith('.avif')) return ImageType.avif;
     if (endsWith('.json')) return ImageType.json;
     if (endsWith('.zip')) return ImageType.zip;
     if (endsWith('.webp')) return ImageType.webp;
