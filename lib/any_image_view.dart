@@ -263,6 +263,16 @@ class AnyImageView extends StatelessWidget {
           return errorFallback();
         }
 
+        if (path.toLowerCase().endsWith('.avif')) {
+          return AvifImage.file(
+            file,
+            height: height,
+            width: width,
+            fit: fit ?? BoxFit.cover,
+            errorBuilder: (_, __, ___) => errorFallback(),
+          );
+        }
+
         // Displays the image with fade-in animation.
         return Image.file(
           file,
