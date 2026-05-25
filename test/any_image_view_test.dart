@@ -1,6 +1,7 @@
 import 'package:any_image_view/any_image_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_avif/flutter_avif.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lottie/lottie.dart';
 
@@ -210,6 +211,22 @@ void main() {
       );
       await tester.pump();
       expect(find.byType(LottieBuilder), findsOneWidget);
+    });
+
+    testWidgets('asset AVIF path builds AvifImage', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: AnyImageView(
+              imagePath: 'assets/images/photo.avif',
+              width: 100,
+              height: 100,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.byType(AvifImage), findsOneWidget);
     });
 
     testWidgets('asset PNG path builds Image (asset)', (tester) async {

@@ -35,6 +35,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_avif/flutter_avif.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
@@ -282,6 +283,15 @@ class AnyImageView extends StatelessWidget {
           colorFilter: _effectiveSvgColorFilter,
           loadingWidget: _buildLoadingWidget(),
           errorFallback: errorFallback,
+        );
+      case ImageType.avif:
+        // Handles AVIF image loading (local assets).
+        return AvifImage.asset(
+          path,
+          height: height,
+          width: width,
+          fit: fit ?? BoxFit.cover,
+          errorBuilder: (_, __, ___) => errorFallback(),
         );
       case ImageType.json:
       case ImageType.zip:
