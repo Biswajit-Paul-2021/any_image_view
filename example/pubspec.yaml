@@ -25,4 +25,6 @@ flutter:
     - assets/png/
     - assets/svg/
     - assets/lottie/
+    - assets/avif/
+    
 
