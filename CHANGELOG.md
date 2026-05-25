@@ -1,3 +1,13 @@
+## 2.2.0
+- Added: **AVIF support** — `.avif` asset paths, network URLs (e.g. `https://example.com/photo.avif`), local files, and XFile sources now render via `flutter_avif`. Animated AVIFs auto-play by default, matching GIF behavior (verified against `flutter_avif` 3.1.0: `AvifImageStreamCompleter` schedules frames automatically via `SchedulerBinding.scheduleFrameCallback` — no `autoplay` parameter exists or is needed).
+- Added: `ImageType.avif` enum case for AVIF format detection.
+- Added: `avif` topic on pub.dev.
+- Known: Network AVIFs do not show the built-in shimmer loading placeholder — `CachedNetworkAvifImage` does not expose a placeholder hook the way `CachedNetworkImage` does. The `errorWidget` fallback works normally.
+- Known: `flutter_avif_ios` and `flutter_avif_macos` (transitive deps via `flutter_avif`) do not yet support Swift Package Manager and will print a warning during `flutter pub get` on macOS. CocoaPods works as expected. Will become an error in a future Flutter release; upstream issue.
+- Dependency: added `flutter_avif: ^3.1.0` (libavif via FFI; bundles native plugins for Android, iOS, Web, macOS, Windows, Linux).
+
+---
+
 ## 2.1.0
 - Added: **Network SVG support** — SVG images from HTTP/HTTPS URLs (e.g. `https://example.com/icon.svg`) are loaded via `http` and rendered with `SvgPicture.string()`; failed loads show the error fallback.
 - Added: **`svgColor`** — optional color to tint SVG images (asset and network) using `BlendMode.srcIn`.
