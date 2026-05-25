@@ -34,6 +34,9 @@ void main() {
       test('file path ending in .svg still returns ImageType.file', () {
         expect('/tmp/icon.svg'.imageType, ImageType.file);
       });
+      test('file path ending in .avif still returns ImageType.file', () {
+        expect('/tmp/photo.avif'.imageType, ImageType.file);
+      });
     });
 
     group('asset paths by extension', () {
@@ -45,6 +48,9 @@ void main() {
       });
       test('.zip returns ImageType.zip', () {
         expect('assets/lottie/animation.zip'.imageType, ImageType.zip);
+      });
+      test('.avif returns ImageType.avif', () {
+        expect('assets/images/photo.avif'.imageType, ImageType.avif);
       });
       test('.png returns ImageType.png', () {
         expect('assets/images/photo.png'.imageType, ImageType.png);
@@ -96,6 +102,15 @@ void main() {
       });
       test('https URL ending in .json is network (not lottie asset)', () {
         expect('https://example.com/a.json'.imageType, ImageType.network);
+      });
+      test('https URL ending in .avif is network (not avif asset)', () {
+        expect('https://example.com/photo.avif'.imageType, ImageType.network);
+      });
+      test('https URL with .avif and query string returns ImageType.network', () {
+        expect(
+          'https://cdn.example.com/photo.avif?token=abc'.imageType,
+          ImageType.network,
+        );
       });
     });
   });
