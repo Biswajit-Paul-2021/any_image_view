@@ -191,6 +191,74 @@ class _ImageGalleryScreenState extends State<ImageGalleryScreen> {
           ),
           const SizedBox(height: 24),
           _buildSection(
+            'AVIF from Local Asset',
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '📦 Bundled AVIF assets — boat & ikigai (Venn diagram)',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                AnyImageView(
+                  imagePath: 'assets/avif/boat.avif',
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                const SizedBox(height: 16),
+                AnyImageView(
+                  imagePath: 'assets/avif/ikigai.avif',
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.contain,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          _buildSection(
+            'AVIF from Network',
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '🆕 Network AVIF — animated AVIFs auto-play',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                AnyImageView(
+                  imagePath:
+                      'https://github.com/link-u/avif-sample-images/raw/master/fox.profile0.10bpc.yuv420.avif',
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                const SizedBox(height: 16),
+                AnyImageView(
+                  imagePath:
+                      'https://colinbendell.github.io/webperf/animated-gif-decode/5frames.avif',
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          _buildSection(
             'Lottie Animation',
             AnyImageView(
               imagePath: 'assets/lottie/flutter_mobile.json',

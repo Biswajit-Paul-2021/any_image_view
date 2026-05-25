@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:any_image_view/any_image_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_avif/flutter_avif.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lottie/lottie.dart';
 
@@ -34,6 +37,9 @@ void main() {
       test('file path ending in .svg still returns ImageType.file', () {
         expect('/tmp/icon.svg'.imageType, ImageType.file);
       });
+      test('file path ending in .avif still returns ImageType.file', () {
+        expect('/tmp/photo.avif'.imageType, ImageType.file);
+      });
     });
 
     group('asset paths by extension', () {
@@ -45,6 +51,9 @@ void main() {
       });
       test('.zip returns ImageType.zip', () {
         expect('assets/lottie/animation.zip'.imageType, ImageType.zip);
+      });
+      test('.avif returns ImageType.avif', () {
+        expect('assets/images/photo.avif'.imageType, ImageType.avif);
       });
       test('.png returns ImageType.png', () {
         expect('assets/images/photo.png'.imageType, ImageType.png);
@@ -97,6 +106,15 @@ void main() {
       test('https URL ending in .json is network (not lottie asset)', () {
         expect('https://example.com/a.json'.imageType, ImageType.network);
       });
+      test('https URL ending in .avif is network (not avif asset)', () {
+        expect('https://example.com/photo.avif'.imageType, ImageType.network);
+      });
+      test('https URL with .avif and query string returns ImageType.network', () {
+        expect(
+          'https://cdn.example.com/photo.avif?token=abc'.imageType,
+          ImageType.network,
+        );
+      });
     });
   });
 
@@ -134,6 +152,38 @@ void main() {
       );
       await tester.pump();
       expect(find.byType(CachedNetworkImage), findsOneWidget);
+    });
+
+    testWidgets('network AVIF URL builds CachedNetworkAvifImage', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: AnyImageView(
+              imagePath: 'https://example.com/photo.avif',
+              width: 100,
+              height: 100,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.byType(CachedNetworkAvifImage), findsOneWidget);
+    });
+
+    testWidgets('network AVIF URL with query string builds CachedNetworkAvifImage', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: AnyImageView(
+              imagePath: 'https://cdn.example.com/photo.avif?token=abc',
+              width: 100,
+              height: 100,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.byType(CachedNetworkAvifImage), findsOneWidget);
     });
 
     testWidgets('null imagePath shows error fallback (broken image)', (tester) async {
@@ -195,6 +245,58 @@ void main() {
       );
       await tester.pump();
       expect(find.byType(LottieBuilder), findsOneWidget);
+    });
+
+    testWidgets('asset AVIF path builds AvifImage', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: AnyImageView(
+              imagePath: 'assets/images/photo.avif',
+              width: 100,
+              height: 100,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.byType(AvifImage), findsOneWidget);
+    });
+
+    testWidgets('local file AVIF path builds AvifImage (file route)',
+        (tester) async {
+      // Real on-disk file required: _buildFileImage's existsSync() gate would
+      // otherwise short-circuit to the error fallback before any AvifImage is
+      // mounted, so we cannot fake this with a string path alone.
+      final tmpFile = File(
+        '${Directory.systemTemp.path}/any_image_view_file_route_'
+        '${DateTime.now().microsecondsSinceEpoch}.avif',
+      );
+      tmpFile.writeAsBytesSync(const [0]);
+      addTearDown(() {
+        if (tmpFile.existsSync()) tmpFile.deleteSync();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: AnyImageView(
+              imagePath: tmpFile.path,
+              width: 100,
+              height: 100,
+            ),
+          ),
+        ),
+      );
+      // _buildFileImage wraps the AvifImage in a FutureBuilder<bool> on
+      // file.exists(); runAsync lets that future resolve, then pump rebuilds.
+      // pumpAndSettle would deadlock on Shimmer's repeating animation.
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      });
+      await tester.pump();
+
+      expect(find.byType(AvifImage), findsOneWidget);
     });
 
     testWidgets('asset PNG path builds Image (asset)', (tester) async {
