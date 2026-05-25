@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:any_image_view/any_image_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -258,6 +260,42 @@ void main() {
         ),
       );
       await tester.pump();
+      expect(find.byType(AvifImage), findsOneWidget);
+    });
+
+    testWidgets('local file AVIF path builds AvifImage (file route)',
+        (tester) async {
+      // Real on-disk file required: _buildFileImage's existsSync() gate would
+      // otherwise short-circuit to the error fallback before any AvifImage is
+      // mounted, so we cannot fake this with a string path alone.
+      final tmpFile = File(
+        '${Directory.systemTemp.path}/any_image_view_file_route_'
+        '${DateTime.now().microsecondsSinceEpoch}.avif',
+      );
+      tmpFile.writeAsBytesSync(const [0]);
+      addTearDown(() {
+        if (tmpFile.existsSync()) tmpFile.deleteSync();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: AnyImageView(
+              imagePath: tmpFile.path,
+              width: 100,
+              height: 100,
+            ),
+          ),
+        ),
+      );
+      // _buildFileImage wraps the AvifImage in a FutureBuilder<bool> on
+      // file.exists(); runAsync lets that future resolve, then pump rebuilds.
+      // pumpAndSettle would deadlock on Shimmer's repeating animation.
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      });
+      await tester.pump();
+
       expect(find.byType(AvifImage), findsOneWidget);
     });
 
