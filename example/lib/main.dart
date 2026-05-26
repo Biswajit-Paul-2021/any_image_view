@@ -12,37 +12,33 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Any Image View Demo',
+      title: 'Any Image View',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        colorSchemeSeed: Colors.indigo,
         useMaterial3: true,
       ),
-      home: const ImageGalleryScreen(),
+      home: const GalleryScreen(),
     );
   }
 }
 
-class ImageGalleryScreen extends StatefulWidget {
-  const ImageGalleryScreen({super.key});
+class GalleryScreen extends StatefulWidget {
+  const GalleryScreen({super.key});
 
   @override
-  State<ImageGalleryScreen> createState() => _ImageGalleryScreenState();
+  State<GalleryScreen> createState() => _GalleryScreenState();
 }
 
-class _ImageGalleryScreenState extends State<ImageGalleryScreen> {
-  XFile? _selectedImage;
-  final ImagePicker _picker = ImagePicker();
+class _GalleryScreenState extends State<GalleryScreen> {
+  XFile? _picked;
 
-  Future<void> _pickImage() async {
+  Future<void> _pick() async {
     try {
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-      if (image != null) {
-        setState(() {
-          _selectedImage = image;
-        });
-      }
+      final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (image != null) setState(() => _picked = image);
     } catch (e) {
-      debugPrint('Error picking image: $e');
+      debugPrint('pick error: $e');
     }
   }
 
@@ -50,101 +46,44 @@ class _ImageGalleryScreenState extends State<ImageGalleryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Any Image View - Advanced Features'),
-        elevation: 2,
+        title: const Text('Any Image View'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.photo_library),
-            onPressed: _pickImage,
-            tooltip: 'Pick Image from Gallery',
+            icon: const Icon(Icons.photo_library_outlined),
+            onPressed: _pick,
+            tooltip: 'Pick from gallery',
           ),
         ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          if (_selectedImage != null) ...[
-            _buildSection(
-              'XFile from Image Picker (Perfect XFile Support)',
-              AnyImageView(
-                imagePath: _selectedImage,
+          if (_picked != null)
+            _Section(
+              title: 'Picked image (XFile)',
+              child: AnyImageView(
+                imagePath: _picked,
                 height: 200,
                 width: double.infinity,
                 fit: BoxFit.cover,
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.green.withValues(alpha: 0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
               ),
             ),
-            const SizedBox(height: 24),
-          ],
-          _buildSection(
-            'Network Image with Shimmer Loading Animation',
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '✨ Watch the shimmer animation while image loads',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                AnyImageView(
-                  imagePath:
-                      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop',
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-              ],
+          _Section(
+            title: 'Network image — tap for fullscreen',
+            child: AnyImageView(
+              imagePath:
+                  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600',
+              height: 200,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              enableFullscreen: true,
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
-          const SizedBox(height: 24),
-          _buildSection(
-            'Best Resolution Network Image',
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '🚀 Images load at full original resolution',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                AnyImageView(
-                  imagePath:
-                      'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=600&fit=crop',
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  borderRadius: BorderRadius.circular(12),
-                )
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          _buildSection(
-            'Local Asset Image',
-            AnyImageView(
+          _Section(
+            title: 'PNG asset',
+            child: AnyImageView(
               imagePath: 'assets/png/flutter_banner.png',
               height: 150,
               width: double.infinity,
@@ -152,264 +91,118 @@ class _ImageGalleryScreenState extends State<ImageGalleryScreen> {
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          const SizedBox(height: 24),
-          _buildSection(
-            'SVG Image (Local Asset)',
-            AnyImageView(
+          _Section(
+            title: 'SVG asset',
+            child: AnyImageView(
               imagePath: 'assets/svg/flutter.svg',
               height: 100,
               width: 100,
               fit: BoxFit.contain,
             ),
           ),
-          const SizedBox(height: 24),
-          _buildSection(
-            'SVG from Network with Custom Color',
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Network SVG + svgColor (e.g. blue tint)',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                AnyImageView(
-                  imagePath:
-                      'https://www.svgrepo.com/show/530641/telephone.svg',
-                  height: 100,
-                  width: 100,
-                  fit: BoxFit.contain,
-                  // svgColor: Colors.blue,
-                  svgColorFilter: ColorFilter.linearToSrgbGamma(),
-                ),
-              ],
+          _Section(
+            title: 'Network SVG with color filter',
+            child: AnyImageView(
+              imagePath: 'https://www.svgrepo.com/show/530641/telephone.svg',
+              height: 100,
+              width: 100,
+              fit: BoxFit.contain,
+              svgColor: Colors.indigo,
             ),
           ),
-          const SizedBox(height: 24),
-          _buildSection(
-            'AVIF from Local Asset',
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '📦 Bundled AVIF assets — boat & ikigai (Venn diagram)',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                AnyImageView(
-                  imagePath: 'assets/avif/boat.avif',
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                const SizedBox(height: 16),
-                AnyImageView(
-                  imagePath: 'assets/avif/ikigai.avif',
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.contain,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ],
+          _Section(
+            title: 'AVIF asset',
+            child: AnyImageView(
+              imagePath: 'assets/avif/boat.avif',
+              height: 200,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
-          const SizedBox(height: 24),
-          _buildSection(
-            'AVIF from Network',
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '🆕 Network AVIF — animated AVIFs auto-play',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                AnyImageView(
-                  imagePath:
-                      'https://github.com/link-u/avif-sample-images/raw/master/fox.profile0.10bpc.yuv420.avif',
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                const SizedBox(height: 16),
-                AnyImageView(
-                  imagePath:
-                      'https://colinbendell.github.io/webperf/animated-gif-decode/5frames.avif',
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ],
+          _Section(
+            title: 'AVIF — animated, network',
+            child: AnyImageView(
+              imagePath:
+                  'https://colinbendell.github.io/webperf/animated-gif-decode/5frames.avif',
+              height: 200,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
-          const SizedBox(height: 24),
-          _buildSection(
-            'Lottie Animation',
-            AnyImageView(
+          _Section(
+            title: 'Lottie animation',
+            child: AnyImageView(
               imagePath: 'assets/lottie/flutter_mobile.json',
               height: 150,
               width: 150,
               fit: BoxFit.contain,
             ),
           ),
-          const SizedBox(height: 24),
-          _buildSection(
-            'Circular Avatar with Zoom',
-            Center(
+          _Section(
+            title: 'Circular avatar',
+            child: Center(
               child: AnyImageView(
                 imagePath:
-                    'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop',
+                    'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200',
                 height: 120,
                 width: 120,
                 fit: BoxFit.cover,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.blue, width: 3),
-                enableZoom: true,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    spreadRadius: 2,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                border: Border.all(color: Colors.indigo, width: 3),
               ),
             ),
           ),
-          const SizedBox(height: 24),
-          _buildSection(
-            'Image with Custom Error Handler',
-            AnyImageView(
+          _Section(
+            title: 'Custom error widget',
+            child: AnyImageView(
               imagePath: 'https://invalid-url.com/image.jpg',
-              height: 200,
+              height: 150,
               width: double.infinity,
               borderRadius: BorderRadius.circular(12),
               errorWidget: Container(
-                height: 200,
+                height: 150,
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
+                  color: Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Image not available',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                  ],
-                ),
+                child: const Center(child: Text('Image not available')),
               ),
             ),
           ),
-          const SizedBox(height: 24),
-          _buildSection(
-            'Default Error Image (Built-in Broken Image Icon)',
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '🛡️ Default error handling with 20px padding',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                AnyImageView(
-                  imagePath: 'https://this-url-does-not-exist.com/broken.jpg',
-                  height: 200,
-                  width: double.infinity,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          _buildSection(
-            'Card Style Image',
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AnyImageView(
-                    imagePath:
-                        'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=400&h=250&fit=crop',
-                    height: 200,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16),
-                    ),
-                    fadeDuration: const Duration(milliseconds: 600),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Beautiful Card Image',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'With smooth fade-in animation',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
         ],
       ),
     );
   }
+}
 
-  Widget _buildSection(String title, Widget child) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+class _Section extends StatelessWidget {
+  const _Section({required this.title, required this.child});
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
-        ),
-        child,
-      ],
+          child,
+        ],
+      ),
     );
   }
 }

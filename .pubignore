@@ -3,3 +3,7 @@ docs/
 
 # Local logs from development
 logs/
+
+# Claude Code instructions — internal contributor guide, not for pub.dev.
+CLAUDE.md
+.claude/

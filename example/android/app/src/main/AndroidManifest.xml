@@ -1,4 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required by cached_network_image / flutter_avif network fetches.
+         (The debug/profile overlays grant this for the dev tool, but release
+         builds and some merged-manifest paths need it here too.) -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:label="example"
         android:name="${applicationName}"

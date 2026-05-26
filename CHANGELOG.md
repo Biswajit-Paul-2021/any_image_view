@@ -1,10 +1,8 @@
 ## 2.2.0
-- Added: **AVIF support** — `.avif` asset paths, network URLs (e.g. `https://example.com/photo.avif`), local files, and XFile sources now render via `flutter_avif`. Animated AVIFs auto-play by default, matching GIF behavior (verified against `flutter_avif` 3.1.0: `AvifImageStreamCompleter` schedules frames automatically via `SchedulerBinding.scheduleFrameCallback` — no `autoplay` parameter exists or is needed).
-- Added: `ImageType.avif` enum case for AVIF format detection.
-- Added: `avif` topic on pub.dev.
-- Known: Network AVIFs do not show the built-in shimmer loading placeholder — `CachedNetworkAvifImage` does not expose a placeholder hook the way `CachedNetworkImage` does. The `errorWidget` fallback works normally.
-- Known: `flutter_avif_ios` and `flutter_avif_macos` (transitive deps via `flutter_avif`) do not yet support Swift Package Manager and will print a warning during `flutter pub get` on macOS. CocoaPods works as expected. Will become an error in a future Flutter release; upstream issue.
-- Dependency: added `flutter_avif: ^3.1.0` (libavif via FFI; bundles native plugins for Android, iOS, Web, macOS, Windows, Linux).
+- Added AVIF support — local assets, network URLs, and local files all render through the same `AnyImageView` widget.
+- Added animated AVIF playback — animated AVIFs auto-play, no extra configuration.
+- Added `ImageType.avif` for format detection from a path or URL.
+- Added `enableFullscreen` — tap the image to open a fullscreen viewer with a close button at the top-right, pinch-to-zoom (1x–5x), pan, and double-tap to zoom in/out.
 
 ---
 

@@ -314,5 +314,76 @@ void main() {
       await tester.pump();
       expect(find.byType(Image), findsOneWidget);
     });
+
+    testWidgets('enableFullscreen: true opens dialog with close button on tap',
+        (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: AnyImageView(
+              imagePath: 'https://example.com/photo.jpg',
+              width: 100,
+              height: 100,
+              enableFullscreen: true,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.byType(AnyImageView).first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(find.byType(Dialog), findsOneWidget);
+      expect(find.byIcon(Icons.close), findsOneWidget);
+
+      final viewer = tester.widget<InteractiveViewer>(
+        find.byType(InteractiveViewer),
+      );
+      expect(viewer.scaleEnabled, isTrue);
+      expect(viewer.panEnabled, isTrue);
+      expect(viewer.maxScale, greaterThan(viewer.minScale));
+
+      final controller = viewer.transformationController!;
+      expect(controller.value, Matrix4.identity());
+      await tester.tap(find.byType(InteractiveViewer));
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(find.byType(InteractiveViewer));
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(controller.value, isNot(Matrix4.identity()));
+
+      await tester.tap(find.byIcon(Icons.close));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.byType(Dialog), findsNothing);
+    });
+
+    testWidgets(
+        'enableFullscreen: true does NOT open dialog when onTap is provided',
+        (tester) async {
+      var tapped = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: AnyImageView(
+              imagePath: 'https://example.com/photo.jpg',
+              width: 100,
+              height: 100,
+              enableFullscreen: true,
+              onTap: () => tapped++,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.byType(AnyImageView).first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(tapped, 1);
+      expect(find.byType(Dialog), findsNothing);
+    });
   });
 }

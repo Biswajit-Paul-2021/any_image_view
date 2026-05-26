@@ -104,6 +104,10 @@ class AnyImageView extends StatelessWidget {
   /// Optional custom color filter for SVG images (overrides [svgColor] if both set).
   final ColorFilter? svgColorFilter;
 
+  /// When true, tapping the image opens a fullscreen dialog with a close
+  /// button (top-right) and pinch-to-zoom. Ignored if [onTap] is provided.
+  final bool enableFullscreen;
+
   /// Creates an image view widget with various customization options.
   const AnyImageView({
     Key? key,
@@ -127,6 +131,7 @@ class AnyImageView extends StatelessWidget {
     this.maxRetryAttempts = 3,
     this.svgColor,
     this.svgColorFilter,
+    this.enableFullscreen = false,
   }) : super(key: key);
 
   @override
@@ -146,13 +151,18 @@ class AnyImageView extends StatelessWidget {
       );
     }
 
+    // If the user did not supply their own onTap and enableFullscreen is on,
+    // tapping opens the fullscreen dialog. An explicit onTap always wins.
+    final VoidCallback? effectiveOnTap = onTap ??
+        (enableFullscreen ? () => _openFullscreen(context) : null);
+
     // Returns the image wrapped in a container with customizable properties.
     return InkWell(
       focusColor: Colors.transparent,
       highlightColor: Colors.transparent,
       splashColor: Colors.transparent,
       hoverColor: Colors.transparent,
-      onTap: onTap,
+      onTap: effectiveOnTap,
       child: Container(
         alignment: alignment,
         margin: margin,
@@ -171,6 +181,25 @@ class AnyImageView extends StatelessWidget {
                 borderRadius: borderRadius ?? BorderRadius.zero,
                 child: imageContent,
               ),
+      ),
+    );
+  }
+
+  /// Opens a fullscreen dialog with a zoomable view of [imagePath] and a
+  /// close button anchored at the top-right corner.
+  void _openFullscreen(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black,
+      useSafeArea: false,
+      builder: (_) => _FullscreenImageDialog(
+        imagePath: imagePath,
+        httpHeaders: httpHeaders,
+        placeholderWidget: placeholderWidget,
+        errorWidget: errorWidget,
+        svgColor: svgColor,
+        svgColorFilter: svgColorFilter,
+        fadeDuration: fadeDuration,
       ),
     );
   }
@@ -390,6 +419,129 @@ class AnyImageView extends StatelessWidget {
           width: width,
           borderRadius: borderRadius,
         );
+  }
+}
+
+/// Fullscreen dialog used by [AnyImageView.enableFullscreen]. Renders the image
+/// inside an [InteractiveViewer] for pinch-to-zoom (and pan) on a black backdrop,
+/// with a close button anchored at the top-right corner (respecting safe area).
+///
+/// The viewer is placed above all clipping so that pinch-zoomed and panned
+/// pixels are not cropped. Double-tap toggles between fit and a 2.5x zoom
+/// centered on the tap point.
+class _FullscreenImageDialog extends StatefulWidget {
+  const _FullscreenImageDialog({
+    required this.imagePath,
+    required this.httpHeaders,
+    required this.placeholderWidget,
+    required this.errorWidget,
+    required this.svgColor,
+    required this.svgColorFilter,
+    required this.fadeDuration,
+  });
+
+  final Object? imagePath;
+  final Map<String, String>? httpHeaders;
+  final Widget? placeholderWidget;
+  final Widget? errorWidget;
+  final Color? svgColor;
+  final ColorFilter? svgColorFilter;
+  final Duration fadeDuration;
+
+  @override
+  State<_FullscreenImageDialog> createState() => _FullscreenImageDialogState();
+}
+
+class _FullscreenImageDialogState extends State<_FullscreenImageDialog> {
+  final TransformationController _transformController =
+      TransformationController();
+  TapDownDetails? _doubleTapDetails;
+
+  static const double _minScale = 1.0;
+  static const double _maxScale = 5.0;
+  static const double _doubleTapScale = 2.5;
+
+  @override
+  void dispose() {
+    _transformController.dispose();
+    super.dispose();
+  }
+
+  void _handleDoubleTap() {
+    if (_transformController.value != Matrix4.identity()) {
+      _transformController.value = Matrix4.identity();
+      return;
+    }
+    final position = _doubleTapDetails?.localPosition;
+    if (position == null) return;
+    final double s = _doubleTapScale;
+    final double dx = -position.dx * (s - 1);
+    final double dy = -position.dy * (s - 1);
+    _transformController.value = Matrix4(
+      s, 0, 0, 0,
+      0, s, 0, 0,
+      0, 0, 1, 0,
+      dx, dy, 0, 1,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      insetPadding: EdgeInsets.zero,
+      backgroundColor: Colors.black,
+      elevation: 0,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onDoubleTapDown: (details) => _doubleTapDetails = details,
+              onDoubleTap: _handleDoubleTap,
+              child: InteractiveViewer(
+                transformationController: _transformController,
+                minScale: _minScale,
+                maxScale: _maxScale,
+                panEnabled: true,
+                scaleEnabled: true,
+                clipBehavior: Clip.none,
+                child: AnyImageView(
+                  imagePath: widget.imagePath,
+                  fit: BoxFit.contain,
+                  // Zoom is handled by the outer InteractiveViewer; disabling
+                  // here avoids nested zoom handlers (which conflict).
+                  enableZoom: false,
+                  httpHeaders: widget.httpHeaders,
+                  placeholderWidget: widget.placeholderWidget,
+                  errorWidget: widget.errorWidget,
+                  svgColor: widget.svgColor,
+                  svgColorFilter: widget.svgColorFilter,
+                  fadeDuration: widget.fadeDuration,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Material(
+                  color: Colors.black54,
+                  shape: const CircleBorder(),
+                  child: IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    tooltip: 'Close',
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
