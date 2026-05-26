@@ -3,12 +3,10 @@ version: 2.2.0
 
 description: "A versatile Flutter image viewer supporting PNG, JPG, WebP, GIF, AVIF, TIFF, RAW, SVG, Lottie, XFile, and network images with best resolution — all in one seamless package."
 topics:
-  - flutter
-  - image
   - image-viewer
   - svg
   - lottie
-  - avif
+  - image
 
 homepage: https://farhansadikgalib.com/
 repository: https://github.com/farhansadikgalib/any_image_view
@@ -24,12 +22,12 @@ environment:
   flutter: ">=3.27.0"
 
 dependencies:
-  lottie: ^3.3.2
-  flutter_svg: ^2.2.4
+  lottie: ^3.3.3
+  flutter_svg: ^2.3.0
   flutter_avif: ^3.1.0
   cached_network_image: ^3.4.1
   cross_file: ^0.3.5+2
-  http: ^1.2.2
+  http: ^1.6.0
 
   flutter:
     sdk: flutter

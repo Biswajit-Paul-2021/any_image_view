@@ -83,6 +83,3 @@ PNG, JPG, WebP, GIF, AVIF, SVG, Lottie (.json), TIFF, RAW, HEIC, BMP, ICO
 
 ---
 
-<p align="center">
-  Made with ❤️ by <a href="https://farhansadikgalib.com">Farhan Sadik Galib</a>
-</p>
