@@ -20,8 +20,8 @@ screenshots:
     path: raw/banner.png
 
 environment:
-  sdk: ^3.9.0
-  flutter: ">=3.35.0"
+  sdk: ">=3.5.0 <4.0.0"
+  flutter: ">=3.27.0"
 
 dependencies:
   lottie: ^3.3.2
