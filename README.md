@@ -1,8 +1,5 @@
 # 🖼️ Any Image View
 
-[![Pub Version](https://img.shields.io/pub/v/any_image_view.svg)](https://pub.dev/packages/any_image_view)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/farhansadikgalib/any_image_view/main/raw/banner.png" alt="Any Image View"/>
 </p>
@@ -13,7 +10,21 @@
 
 ```yaml
 dependencies:
-  any_image_view: ^2.2.0
+  any_image_view:
+    git:
+      main: https://github.com/Biswajit-Paul-2021/any_image_view.git
+      ref: master
+```
+
+## For Cache Management
+
+```dart
+import 'package:any_image_view/any_image_view.dart';
+
+void main() {
+  AnyImageViewCache.setStalePeriod(const Duration(days: 30));
+  runApp(const MyApp());
+}
 ```
 
 ## Usage
@@ -59,19 +70,19 @@ AnyImageView(
 
 ## Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `imagePath` | `Object?` | URL, asset path, or XFile |
-| `height` / `width` | `double?` | Dimensions |
-| `fit` | `BoxFit?` | Image fit (default: cover) |
-| `shape` | `BoxShape` | rectangle or circle |
-| `borderRadius` | `BorderRadius?` | Rounded corners |
-| `enableZoom` | `bool` | Pinch-to-zoom (default: false) |
-| `placeholderWidget` | `Widget?` | Custom loader |
-| `errorWidget` | `Widget?` | Custom error |
-| `httpHeaders` | `Map?` | Auth headers for network/SVG |
-| `svgColor` | `Color?` | Tint color for SVG (asset & network) |
-| `svgColorFilter` | `ColorFilter?` | Custom color filter for SVG |
+| Parameter           | Type            | Description                          |
+| ------------------- | --------------- | ------------------------------------ |
+| `imagePath`         | `Object?`       | URL, asset path, or XFile            |
+| `height` / `width`  | `double?`       | Dimensions                           |
+| `fit`               | `BoxFit?`       | Image fit (default: cover)           |
+| `shape`             | `BoxShape`      | rectangle or circle                  |
+| `borderRadius`      | `BorderRadius?` | Rounded corners                      |
+| `enableFullScreen`  | `bool`          | Pinch-to-zoom (default: false)       |
+| `placeholderWidget` | `Widget?`       | Custom loader                        |
+| `errorWidget`       | `Widget?`       | Custom error                         |
+| `httpHeaders`       | `Map?`          | Auth headers for network/SVG         |
+| `svgColor`          | `Color?`        | Tint color for SVG (asset & network) |
+| `svgColorFilter`    | `ColorFilter?`  | Custom color filter for SVG          |
 
 ## Supported Formats
 
@@ -82,4 +93,3 @@ PNG, JPG, WebP, GIF, AVIF, SVG, Lottie (.json), TIFF, RAW, HEIC, BMP, ICO
 ✅ Android · ✅ iOS · ✅ Web · ✅ macOS · ✅ Windows · ✅ Linux
 
 ---
-
