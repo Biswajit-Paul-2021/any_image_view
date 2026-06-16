@@ -8,11 +8,6 @@ topics:
   - lottie
   - image
 
-homepage: https://farhansadikgalib.com/
-repository: https://github.com/farhansadikgalib/any_image_view
-issue_tracker: https://github.com/farhansadikgalib/any_image_view/issues
-documentation: https://pub.dev/documentation/any_image_view/latest/
-
 screenshots:
   - description: "any image view"
     path: raw/banner.png

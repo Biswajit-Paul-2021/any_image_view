@@ -31,11 +31,13 @@ library any_image_view;
 
 import 'dart:io';
 
+import 'package:any_image_view/custom_cache_network_avif_image.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_avif/flutter_avif.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart'; // <-- added
 import 'package:flutter_svg/svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
@@ -153,8 +155,8 @@ class AnyImageView extends StatelessWidget {
 
     // If the user did not supply their own onTap and enableFullscreen is on,
     // tapping opens the fullscreen dialog. An explicit onTap always wins.
-    final VoidCallback? effectiveOnTap = onTap ??
-        (enableFullscreen ? () => _openFullscreen(context) : null);
+    final VoidCallback? effectiveOnTap =
+        onTap ?? (enableFullscreen ? () => _openFullscreen(context) : null);
 
     // Returns the image wrapped in a container with customizable properties.
     return InkWell(
@@ -365,21 +367,23 @@ class AnyImageView extends StatelessWidget {
         }
         // Handles network AVIF (URLs ending with .avif) via cached AVIF image.
         if (_isAvifUrl(path)) {
-          return CachedNetworkAvifImage(
+          return CustomCachedNetworkAvifImage(
             path,
             height: height,
             width: width,
             fit: fit ?? BoxFit.cover,
             headers: httpHeaders,
+            cacheManager: AnyImageViewCache.cacheManager,
             errorBuilder: (_, __, ___) => errorFallback(),
           );
         }
-        // Handles network image loading without caching for best resolution.
+        // Handles network image loading with caching and global stale period.
         return CachedNetworkImage(
           height: height,
           width: width,
           fit: fit ?? BoxFit.cover,
           imageUrl: path,
+          cacheManager: AnyImageViewCache.cacheManager, // <-- added
           placeholder: (_, __) => _buildLoadingWidget(),
           errorWidget: (_, __, ___) => errorFallback(),
           fadeInDuration: fadeDuration,
@@ -478,10 +482,22 @@ class _FullscreenImageDialogState extends State<_FullscreenImageDialog> {
     final double dx = -position.dx * (s - 1);
     final double dy = -position.dy * (s - 1);
     _transformController.value = Matrix4(
-      s, 0, 0, 0,
-      0, s, 0, 0,
-      0, 0, 1, 0,
-      dx, dy, 0, 1,
+      s,
+      0,
+      0,
+      0,
+      0,
+      s,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      dx,
+      dy,
+      0,
+      1,
     );
   }
 
@@ -508,8 +524,6 @@ class _FullscreenImageDialogState extends State<_FullscreenImageDialog> {
                 child: AnyImageView(
                   imagePath: widget.imagePath,
                   fit: BoxFit.contain,
-                  // Zoom is handled by the outer InteractiveViewer; disabling
-                  // here avoids nested zoom handlers (which conflict).
                   enableZoom: false,
                   httpHeaders: widget.httpHeaders,
                   placeholderWidget: widget.placeholderWidget,
@@ -817,5 +831,60 @@ class _ShimmerState extends State<Shimmer> with SingleTickerProviderStateMixin {
         );
       },
     );
+  }
+}
+
+/// Global configuration for image caching in [AnyImageView].
+///
+/// Allows setting a stale period (max age) for cached network images
+/// and checking whether a particular URL is already cached.
+class AnyImageViewCache {
+  static Duration? _stalePeriod;
+  static BaseCacheManager? _cacheManager;
+  static int? _maxNrOfCacheObjects;
+
+  /// Set the maximum age for cached network images.
+  ///
+  /// Existing cache files are preserved, but their freshness is re‑evaluated
+  /// according to this duration.
+  static void setStalePeriod(Duration duration,
+      {int maxNrOfCacheObjects = 200}) {
+    _stalePeriod = duration;
+    _maxNrOfCacheObjects = maxNrOfCacheObjects;
+    _cacheManager = null; // will recreate with new Config on next access
+  }
+
+  /// Returns a [CacheManager] configured with the current stale period,
+  /// or `null` if no stale period has been set (then the default manager is used).
+  static BaseCacheManager? get cacheManager {
+    if (_stalePeriod == null) return null;
+    _cacheManager ??= CacheManager(
+      Config(
+        'anyImageViewCache',
+        stalePeriod: _stalePeriod!,
+        maxNrOfCacheObjects: _maxNrOfCacheObjects ?? 200, // adjust as needed
+      ),
+    );
+    return _cacheManager;
+  }
+
+  /// Optionally clears all cached files managed by this cache.
+  static Future<void> clearCache() async {
+    final mgr = cacheManager;
+    if (mgr != null) {
+      await mgr.emptyCache();
+    }
+  }
+
+  /// Returns `true` if the given [url] is available in the image cache,
+  /// `false` otherwise.
+  ///
+  /// Uses the same cache manager as [AnyImageView]:
+  /// - if a custom stale period was set, it uses that custom manager;
+  /// - otherwise it uses the default `CacheManager` (same as `CachedNetworkImage`).
+  static Future<bool> isCached(String url) async {
+    final mgr = cacheManager ?? DefaultCacheManager();
+    final fileInfo = await mgr.getFileFromCache(url);
+    return fileInfo != null;
   }
 }

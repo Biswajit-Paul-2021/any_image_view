@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:any_image_view/any_image_view.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 void main() {
+  AnyImageViewCache.setStalePeriod(const Duration(days: 30));
   runApp(const MyApp());
 }
 
@@ -84,9 +85,17 @@ class _GalleryScreenState extends State<GalleryScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _pick,
-        icon: const Icon(Icons.add_photo_alternate_outlined),
-        label: const Text('Pick image'),
+        onPressed: () {
+          AnyImageViewCache.clearCache().then((value) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text("Cache cleared")));
+            }
+          });
+        },
+        icon: const Icon(Icons.delete),
+        label: const Text('Clear cache'),
       ),
       body: Center(
         child: ConstrainedBox(
@@ -109,10 +118,11 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 title: 'Network image · tap for fullscreen',
                 child: AnyImageView(
                   imagePath:
-                      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600',
-                  height: 200,
+                      'https://svs.gsfc.nasa.gov/vis/a030000/a030800/a030877/frames/5760x3240_16x9_01p/BlackMarble_2016_1200m_africa_s_labeled.png',
                   width: imageWidth,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.fill,
+                  height: 200,
+                  enableZoom: true,
                   enableFullscreen: true,
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -161,10 +171,16 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 title: 'AVIF network',
                 child: AnyImageView(
                   imagePath:
-                      'https://raw.githubusercontent.com/link-u/avif-sample-images/master/fox.profile0.10bpc.yuv420.odd-width.odd-height.avif',
-                  height: 200,
+                      'https://storage.googleapis.com/channelpay-uploads/Offers/secondary_levers/abbott/2026/abbott-v2.avif',
                   width: imageWidth,
                   fit: BoxFit.cover,
+                  onTap: () async {
+                    print(
+                      await AnyImageViewCache.isCached(
+                        'https://storage.googleapis.com/channelpay-uploads/Offers/secondary_levers/abbott/2026/abbott-v2.avif',
+                      ),
+                    );
+                  },
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
