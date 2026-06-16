@@ -12,8 +12,8 @@
 dependencies:
   any_image_view:
     git:
-      main: https://github.com/Biswajit-Paul-2021/any_image_view.git
-      ref: master
+      url: https://github.com/Biswajit-Paul-2021/any_image_view.git
+      ref: main
 ```
 
 ## For Cache Management
